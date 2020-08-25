@@ -1,3 +1,4 @@
+
 function minWalk(gridList, startX, startY, endX, endY) {
   const currentGrid = [...gridList].join('').split('')
   const validGridListItem = () => {
@@ -5,7 +6,7 @@ function minWalk(gridList, startX, startY, endX, endY) {
   }
   if (currentGrid.length < 1 || currentGrid.length > 100) {
     throw 'Неверная длинна сетки!'
-  } else if (startX >= 100 || startY >= 100 || endX >= 100 || endY >= 100 || startX < 0 || startY < 0 || endX < 0 || endY < 0) {
+  } else if (startX > gridList[0].length - 1 || startY > gridList.length - 1 || endX > gridList[0].length - 1 || endY > gridList.length - 1 || startX < 0 || startY < 0 || endX < 0 || endY < 0) {
     throw 'Координаты не входят в заданую сетку!'
   } else if(!validGridListItem()) {
     throw 'Елементы массива заданой сетки должны быть одной длинны!'
@@ -31,7 +32,6 @@ function minWalk(gridList, startX, startY, endX, endY) {
     const moveValidation = (current, next) => {
       const nextIndex = coordsGridString.indexOf(coordsStringify(next))
       const diffBoolean = (a, b) => Math.max(a,b) - Math.min(a,b) === 1
-
       return ((diffBoolean(current[0], next[0]) && (diffBoolean(current[1], next[1]) || current[1] === next[1])) ||
         (diffBoolean(current[1], next[1]) && (diffBoolean(current[0], next[0]) || current[0] === next[0]))) &&
         currentGrid[nextIndex] !== 'X'
@@ -39,7 +39,12 @@ function minWalk(gridList, startX, startY, endX, endY) {
 
     const shortWayItem = (current, target, array) => {
       const diff = (a, b) => Math.max(a, b) - Math.min(a, b)
-      const valid = array.filter(e => moveValidation(current, e) && !travel.includes(e.join('')))
+      const valid = array.filter(e => {
+        return  moveValidation(current, e) && !travel.includes(coordsStringify(e))
+      })
+      if (!valid.length) {
+        return travel[0].split('.')
+      }
       const diffArray = valid.map(e => diff(e[0], target[0]) + diff(e[1], target[1]))
       const validIndex = diffArray.indexOf(Math.min(...diffArray))
       return valid[validIndex]
@@ -47,14 +52,17 @@ function minWalk(gridList, startX, startY, endX, endY) {
 
     let currentCoords = [...startCoords]
     let counter = 0
-    const travel = [currentCoords.join('')]
+    const travel = [coordsStringify(currentCoords)]
 
     for (let i = 0; i < currentGrid.length; i++) {
-      if(currentCoords.join('') === endCoords.join('')){
+      if (coordsStringify(currentCoords) === coordsStringify(endCoords)) {
         break
       } else {
+        if (coordsStringify(currentCoords) === travel[0]) {
+          counter = 0
+        }
         currentCoords = shortWayItem(currentCoords, endCoords, coordsGrid)
-        travel.push(currentCoords.join(''))
+        travel.push(coordsStringify(currentCoords))
         counter++
       }
     }
@@ -76,4 +84,3 @@ const result = minWalk(
 );
 const p = document.getElementById('result')
 p.innerText = result
-console.log(result)
